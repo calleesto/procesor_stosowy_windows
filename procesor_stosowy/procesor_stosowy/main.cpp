@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 
 using namespace std;
 
@@ -38,6 +38,28 @@ void pushList(List*& head, List*& tail) { // from the tail
     //initialize head char and tail char of the list
     tail->charHead = nullptr;
     tail->charTail = nullptr;
+}
+
+void pushHeadList(List*& head, List*& tail) {
+    // head list case
+    if (head == nullptr) {
+        head = new List();
+        head->next = nullptr;
+        head->prev = nullptr;
+        tail = head;
+        tail->next = nullptr;
+        tail->prev = nullptr;
+    }
+    else { // next lists
+        List* newList = new List();
+        newList->next = head;
+        newList->prev = nullptr;
+        head->prev = newList;
+        head = newList;
+    }
+    //initialize head char and tail char of the list
+    head->charHead = nullptr;
+    head->charTail = nullptr;
 }
 
 void pushChar(List* list, char ch) { // from the head
@@ -258,6 +280,7 @@ int listToSignedInt(List* listTail, Char* currentChar, int result) {
         result = result * 10 + (currentChar->ch - '0');
         return convertListToInt(listTail, currentChar->prev, result);
     }
+    return result;
 }
 
 List* findList(List* currentList, int index) {
@@ -293,11 +316,16 @@ void pickList(List*& listHead, List*& listTail, Char* currentChar) {
 
 
 void pushAsciiDigits(List*& listTail, int value) {
+    if (value < 0) {
+        pushChar(listTail, '-');
+        value = -value;
+    }
     if (value >= 10) {
         pushAsciiDigits(listTail, value / 10);
     }
     pushChar(listTail, '0' + (value % 10));
 }
+
 
 void pushAsciiCharFromNumber(List*& listHead, List*& listTail) {
     int asciiCode = convertListToInt(listTail, listTail->charTail, 0);
@@ -365,7 +393,7 @@ bool isLessThan(Char* currentChar1, Char* currentChar2) {
             return isLessThan(currentChar1->prev, currentChar2->prev);
         }
         else if (currentChar2->ch < currentChar1->ch) {
-            return true; 
+            return true;
         }
         else {
             return false;
@@ -436,13 +464,167 @@ void equalSign(List*& listHead, List*& listTail) {
     }
 }
 
-void addLists() {
-    
+void conditionalJump(List*& listHead, List*& listTail, int& i) {
+    int targetPosition = convertListToInt(listTail, listTail->charTail, 0);
+    popList(listHead, listTail);
+
+    bool condition = false;
+    if (listTail != nullptr) {
+        if (listTail->charTail != nullptr) {
+            if (!(listTail->charHead == listTail->charTail && listTail->charHead->ch == '0')) {
+                condition = true;
+            }
+        }
+    }
+
+    popList(listHead, listTail);
+
+    if (condition) {
+        i = targetPosition - 1;
+    }
+}
+
+void addChars(List*& listHead, Char* currentChar1, Char* currentChar2, int remainder) { // char1 is listTail, char2 is listtail->prev
+    if (currentChar1 && currentChar1->ch == '-') currentChar1 = currentChar1->next;
+    if (currentChar2 && currentChar2->ch == '-') currentChar2 = currentChar2->next;
+
+    int digit1 = currentChar1 != nullptr ? (currentChar1->ch - '0') : 0;
+    int digit2 = currentChar2 != nullptr ? (currentChar2->ch - '0') : 0;
+    int sum = digit1 + digit2 + remainder;
+
+    if (currentChar1 != nullptr || currentChar2 != nullptr || remainder > 0) {
+        if (sum < 10) {
+            pushCharTail(listHead, '0' + sum);
+            // Move to next digits, handling null pointers
+            Char* nextChar1 = currentChar1 != nullptr ? currentChar1->next : nullptr;
+            Char* nextChar2 = currentChar2 != nullptr ? currentChar2->next : nullptr;
+            addChars(listHead, nextChar1, nextChar2, 0);
+        }
+        else {
+            pushCharTail(listHead, '0' + (sum % 10));
+            // Move to next digits, handling null pointers
+            Char* nextChar1 = currentChar1 != nullptr ? currentChar1->next : nullptr;
+            Char* nextChar2 = currentChar2 != nullptr ? currentChar2->next : nullptr;
+            addChars(listHead, nextChar1, nextChar2, 1);
+        }
+    }
+    else if (remainder > 0) {
+        pushChar(listHead, '0' + remainder);
+    }
 }
 
 
-void manageInput(List*& listHead, List*& listTail, char ch, int i) {
-    int nLists, asciiValue;
+void addLargeLists(List*& listHead, List*& listTail) {
+    pushHeadList(listHead, listTail);
+
+    addChars(listHead, listTail->charHead, listTail->prev->charHead, 0);
+
+    popList(listHead, listTail);
+    popList(listHead, listTail);
+}
+
+
+
+// B - A
+void subtractAFromB(List*& listHead, List*& listTail, Char* a, Char* b, int borrow) {
+    int digit1 = a ? a->ch - '0' : 0;
+    int digit2 = b ? b->ch - '0' : 0;
+    int diff = digit2 - digit1 - borrow;
+
+
+    if (diff < 0) {
+        diff += 10;
+        borrow = 1;
+
+    }
+    else {
+        borrow = 0;
+
+    }
+    pushCharTail(listHead, '0' + (diff));
+    Char* nextChar1 = a ? a->next : nullptr;
+    Char* nextChar2 = b ? b->next : nullptr;
+    if (nextChar1 || nextChar2) {
+        subtractAFromB(listHead, listTail, nextChar1, nextChar2, borrow);
+    }
+}
+
+bool aIsBigger(Char* a, Char* b, int result) {
+    if (a->ch >= b->ch) {
+        result = true;
+    }
+    else {
+        result = false;
+    }
+
+    if ((a->next == nullptr) && (b->next == nullptr)) {
+        return result;
+    }
+    else if ((a->next != nullptr && b->next == nullptr)) {
+        return true;
+    }
+    else if ((b->next != nullptr && a->next == nullptr)) {
+        return false;
+    }
+    else {
+        return aIsBigger(a->next, b->next, result);
+    }
+    
+}
+
+void addLists(List*& listHead, List*& listTail) {
+    char a = listTail->charTail->ch;
+    char b = listTail->prev->charTail->ch;
+    Char* aLink = listTail->charHead;
+    Char* bLink = listTail->prev->charHead;
+
+    bool isNegA = false;
+    bool isNegB = false;
+
+    trimZeros(listHead, listTail, listTail->charTail, false);
+    trimZeros(listHead, listTail->prev, listTail->prev->charTail, false);
+
+
+    if (a == '-' && b == '-') { // two negatives
+        // add large lists and add negative at the end
+        addLargeLists(listHead, listTail);
+        pushCharTail(listTail, '-');
+    }
+    else if (a != '-' && b != '-') { //two positives
+        // add large lists
+        addLargeLists(listHead, listTail);
+    }
+    else {
+        pushHeadList(listHead, listTail);
+
+        if (a == '-') {
+            popCharTail(listTail);
+            isNegA = true;
+        }
+        else if (b == '-') {
+            popCharTail(listTail->prev);
+            isNegB = true;
+        }
+        if (aIsBigger(aLink, bLink, false)) {
+            subtractAFromB(listHead, listTail, bLink, aLink, 0);
+            if (isNegA && listHead->charHead->ch != '0') {
+                pushCharTail(listHead, '-');
+            }
+        }
+        else {
+            subtractAFromB(listHead, listTail, aLink, bLink, 0);
+            if (isNegB && listHead->charHead->ch != '0') {
+                pushCharTail(listHead, '-');
+            }
+        }
+        popList(listHead, listTail);
+        popList(listHead, listTail);
+        trimZeros(listHead, listTail, listHead->charTail, false);
+    }
+}
+
+void manageInput(List*& listHead, List*& listTail, char ch, int& i) {
+    int asciiValue;
     char headChar;
     switch (ch) {
     case '\'':
@@ -456,7 +638,7 @@ void manageInput(List*& listHead, List*& listTail, char ch, int i) {
         break;
     case '&':
         if (listTail != nullptr) {
-            nLists = countLists(listTail, 0);
+            int nLists = countLists(listTail, 0);
             setIndices(listHead, nLists - 1);
             printReverse(listHead, listHead->charHead);
         }
@@ -524,7 +706,10 @@ void manageInput(List*& listHead, List*& listTail, char ch, int i) {
         logicalNot(listHead, listTail);
         break;
     case '?':
-        //
+        conditionalJump(listHead, listTail, i);
+        break;
+    case '+':
+        addLists(listHead, listTail);
         break;
     default:
         pushChar(listTail, ch);

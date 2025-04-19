@@ -1,4 +1,3 @@
 ﻿  main.cpp
-C:\Users\Stan Swirydczuk\Desktop\STUDIA\AISD\project_windows\procesor_stosowy\procesor_stosowy\main.cpp(589,21): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Stan Swirydczuk\Desktop\STUDIA\AISD\project_windows\procesor_stosowy\procesor_stosowy\main.cpp(261,1): warning C4715: 'listToSignedInt': not all control paths return a value
+C:\Users\Stan Swirydczuk\Desktop\STUDIA\AISD\project_windows\procesor_stosowy\procesor_stosowy\main.cpp(494,1): warning C4715: 'countChars': not all control paths return a value
   procesor_stosowy.vcxproj -> C:\Users\Stan Swirydczuk\Desktop\STUDIA\AISD\project_windows\procesor_stosowy\x64\Debug\procesor_stosowy.exe
